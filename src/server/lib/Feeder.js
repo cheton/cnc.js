@@ -6,7 +6,9 @@ class Feeder extends events.EventEmitter {
         holdReason: null,
         queue: [],
         pending: false,
-        changed: false
+        changed: false,
+        outstanding: 0,
+        onEmptyQueue: []
     };
 
     dataFilter = null;
@@ -73,6 +75,7 @@ class Feeder extends events.EventEmitter {
     clear() {
         this.state.queue = [];
         this.state.pending = false;
+        this.state.unacked = 0;
         this.emit('change');
     }
 
@@ -100,6 +103,7 @@ class Feeder extends events.EventEmitter {
             }
 
             this.state.pending = true;
+            this.state.outstanding++;
             this.emit('data', command, context);
             this.emit('change');
             break;
@@ -122,6 +126,33 @@ class Feeder extends events.EventEmitter {
         const changed = this.state.changed;
         this.state.changed = false;
         return changed;
+    }
+
+    ack() {
+        if (this.state.outstanding > 0) {
+            this.state.outstanding--;
+            if (this.state.outstanding === 0) {
+                this.callOnEmptyCallbacks();
+            }
+        }
+    }
+
+    onEmpty(callback, context = {}) {
+        this.state.onEmptyQueue = this.state.onEmptyQueue.concat(
+            { callback: callback, context: context }
+        );
+        if (this.state.outstanding === 0) {
+            this.callOnEmptyCallbacks();
+        }
+    }
+
+    callOnEmptyCallbacks() {
+        if (this.state.outstanding === 0) {
+            while (this.state.onEmptyQueue.length > 0) {
+                let { callback, context } = this.state.onEmptyQueue.shift();
+                callback(context);
+            }
+        }
     }
 }
 

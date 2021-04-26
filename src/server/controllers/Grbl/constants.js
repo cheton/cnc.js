@@ -17,7 +17,8 @@ export const GRBL_REALTIME_COMMANDS = [
     '~', // Cycle Start
     '!', // Feed Hold
     '?', // Current Status
-    '\x18' // Reset Grbl (Ctrl-X)
+    '\x18', // Reset Grbl (Ctrl-X)
+    '\x85', // Jog Cancel
 ];
 
 // https://github.com/grbl/grbl/wiki/Configuring-Grbl-v0.9

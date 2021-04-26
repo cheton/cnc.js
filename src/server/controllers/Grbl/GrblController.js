@@ -458,6 +458,7 @@ class GrblController {
             this.emit('serialport:read', res.raw);
 
             // Feeder
+            this.feeder.ack();
             this.feeder.next();
         });
 
@@ -503,6 +504,7 @@ class GrblController {
             }
 
             // Feeder
+            this.feeder.ack();
             this.feeder.next();
         });
 
@@ -1326,6 +1328,20 @@ class GrblController {
 
                     this.command('gcode:load', file, data, context, callback);
                 });
+            },
+            'jogCancel': () => {
+                // The GRBL jog cancel command (0x85) is a realtime command, so it will
+                // be handled by GRBL as soon as it enters the serial buffer. If there
+                // are any unparsed jog commands ($J=) in GRBL's serial buffer the
+                // cancel command will skip ahead of them and cancel any parsed jog
+                // commands, but then the unparsed jog command will be parsed and jog
+                // one more time.  Wait until all the commands sent by the feeder have
+                // been acked to ensure all pending jog commands have been parsed
+                // before sending the jog cancel command.
+                let [context = {}] = args;
+                this.feeder.onEmpty((context) => {
+                    this.command('gcode', '\x85', context);
+                }, context);
             }
         }[cmd];
 
