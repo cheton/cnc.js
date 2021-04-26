@@ -302,9 +302,11 @@ class GrblController {
                     if (programMode === 'M0') {
                         log.debug(`M0 Program Pause: line=${sent + 1}, sent=${sent}, received=${received}`);
                         this.workflow.pause({ data: 'M0' });
+                        this.event.trigger('gcode:pause');
                     } else if (programMode === 'M1') {
                         log.debug(`M1 Program Pause: line=${sent + 1}, sent=${sent}, received=${received}`);
                         this.workflow.pause({ data: 'M1' });
+                        this.event.trigger('gcode:pause');
                     }
                 }
 
@@ -312,6 +314,7 @@ class GrblController {
                 if (_.includes(words, 'M6')) {
                     log.debug(`M6 Tool Change: line=${sent + 1}, sent=${sent}, received=${received}`);
                     this.workflow.pause({ data: 'M6' });
+                    this.event.trigger('gcode:pause');
 
                     // Surround M6 with parentheses to ignore unsupported command error
                     line = line.replace('M6', '(M6)');
