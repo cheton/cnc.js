@@ -16,6 +16,9 @@ const FeederPaused = (props) => (
         <Modal.Body>
             <ModalTemplate type="warning">
                 <h5>{props.title}</h5>
+                {props.message &&
+                <p>{props.message}</p>
+                }
                 <p>{i18n._('Click the Continue button to resume execution.')}</p>
             </ModalTemplate>
         </Modal.Body>
@@ -48,6 +51,7 @@ const FeederPaused = (props) => (
 
 FeederPaused.propTypes = {
     title: PropTypes.string,
+    message: PropTypes.string,
     onClose: PropTypes.func
 };
 

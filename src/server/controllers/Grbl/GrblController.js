@@ -189,7 +189,13 @@ class GrblController {
         this.feeder = new Feeder({
             dataFilter: (line, context) => {
                 // Remove comments that start with a semicolon `;`
-                line = line.replace(/\s*;.*/g, '').trim();
+                // Save the comment in case it is useful to show to the user as part of a pause modal.
+                const commentStart = line.indexOf(';');
+                let comment = '';
+                if (commentStart >= 0) {
+                    comment = line.slice(commentStart + 1).trim();
+                    line = line.slice(0, commentStart).trim();
+                }
                 context = this.populateContext(context);
 
                 if (line[0] === '%') {
@@ -215,17 +221,17 @@ class GrblController {
                     const programMode = _.intersection(words, ['M0', 'M1'])[0];
                     if (programMode === 'M0') {
                         log.debug('M0 Program Pause');
-                        this.feeder.hold({ data: 'M0' }); // Hold reason
+                        this.feeder.hold({ data: 'M0', message: comment }); // Hold reason
                     } else if (programMode === 'M1') {
                         log.debug('M1 Program Pause');
-                        this.feeder.hold({ data: 'M1' }); // Hold reason
+                        this.feeder.hold({ data: 'M1', message: comment }); // Hold reason
                     }
                 }
 
                 // M6 Tool Change
                 if (_.includes(words, 'M6')) {
                     log.debug('M6 Tool Change');
-                    this.feeder.hold({ data: 'M6' }); // Hold reason
+                    this.feeder.hold({ data: 'M6', message: comment }); // Hold reason
 
                     // Surround M6 with parentheses to ignore
                     // unsupported command error. If we nuke the whole

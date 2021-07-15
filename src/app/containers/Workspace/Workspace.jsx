@@ -151,7 +151,7 @@ class Workspace extends PureComponent {
                 return;
             }
 
-            const { err, data } = { ...holdReason };
+            const { err, data, message } = { ...holdReason };
 
             if (err) {
                 this.action.openModal(MODAL_FEEDER_PAUSED, {
@@ -178,7 +178,8 @@ class Workspace extends PureComponent {
             }[data] || data;
 
             this.action.openModal(MODAL_FEEDER_PAUSED, {
-                title: title
+                title: title,
+                message: message
             });
         }
     };
@@ -433,6 +434,7 @@ class Workspace extends PureComponent {
                 {modal.name === MODAL_FEEDER_PAUSED && (
                     <FeederPaused
                         title={modal.params.title}
+                        message={modal.params.message}
                         onClose={this.action.closeModal}
                     />
                 )}
